@@ -45,7 +45,10 @@ fig, ax = plt.subplots()
 canvas = FigureCanvasTkAgg(fig, master=root)
 canvas_widget = canvas.get_tk_widget()
 canvas_widget.pack(side=tk.TOP, fill=tk.BOTH, expand=1)
-df['Ветер:А'] = (df['Ветер:А'] * 7) / 9
+df['Ветер:А'] = df['Ветер:А'] * 1.3
+
+
+df['Солнце'] = df['Солнце'] * 2.11
 
 
 def update_plot():
@@ -98,7 +101,7 @@ objects_and_costs['Дома А']['quantity_spinbox']  = ttk.Spinbox(frame2, from
 label_quantity_homes.grid(row=row_counter, column=0, padx=10, pady=10)
 objects_and_costs['Дома А']['quantity_spinbox'] .grid(row=row_counter, column=1, padx=10, pady=10)
 
-label_cost_homes = ttk.Label(frame2, text='Цена Домов за 1 МВт:')
+label_cost_homes = ttk.Label(frame2, text='Сколько платит дом за 1 МВт:')
 objects_and_costs['Дома А']['cost_entry']  = ttk.Entry(frame2)
 label_cost_homes.grid(row=row_counter, column=2, padx=10, pady=10)
 objects_and_costs['Дома А']['cost_entry'] .grid(row=row_counter, column=3, padx=10, pady=10)
@@ -111,7 +114,7 @@ objects_and_costs['Заводы']['quantity_spinbox']  = ttk.Spinbox(frame2, fro
 label_quantity_factories.grid(row=row_counter, column=0, padx=10, pady=10)
 objects_and_costs['Заводы']['quantity_spinbox'] .grid(row=row_counter, column=1, padx=10, pady=10)
 
-label_cost_factories = ttk.Label(frame2, text='Цена Заводов за 1 МВт:')
+label_cost_factories = ttk.Label(frame2, text='Сколько платит заводов за 1 МВт:')
 objects_and_costs['Заводы']['cost_entry']  = ttk.Entry(frame2)
 label_cost_factories.grid(row=row_counter, column=2, padx=10, pady=10)
 objects_and_costs['Заводы']['cost_entry'] .grid(row=row_counter, column=3, padx=10, pady=10)
@@ -124,7 +127,7 @@ objects_and_costs['Больницы']['quantity_spinbox']  = ttk.Spinbox(frame2,
 label_quantity_hospitals.grid(row=row_counter, column=0, padx=10, pady=10)
 objects_and_costs['Больницы']['quantity_spinbox'] .grid(row=row_counter, column=1, padx=10, pady=10)
 
-label_cost_hospitals = ttk.Label(frame2, text='Цена Больниц за 1 МВт:')
+label_cost_hospitals = ttk.Label(frame2, text='Сколько платит больница МВт:')
 objects_and_costs['Больницы']['cost_entry']  = ttk.Entry(frame2)
 label_cost_hospitals.grid(row=row_counter, column=2, padx=10, pady=10)
 objects_and_costs['Больницы']['cost_entry'] .grid(row=row_counter, column=3, padx=10, pady=10)
@@ -137,7 +140,7 @@ objects_and_costs['Ветер:А']['quantity_spinbox']  = ttk.Spinbox(frame2, fr
 label_quantity_windmills.grid(row=row_counter, column=0, padx=10, pady=10)
 objects_and_costs['Ветер:А']['quantity_spinbox'] .grid(row=row_counter, column=1, padx=10, pady=10)
 
-label_cost_windmills = ttk.Label(frame2, text='Цена Ветряков за 1 МВт:')
+label_cost_windmills = ttk.Label(frame2, text='Аренда ветряка:')
 objects_and_costs['Ветер:А']['cost_entry']  = ttk.Entry(frame2)
 label_cost_windmills.grid(row=row_counter, column=2, padx=10, pady=10)
 objects_and_costs['Ветер:А']['cost_entry'] .grid(row=row_counter, column=3, padx=10, pady=10)
@@ -150,7 +153,7 @@ objects_and_costs['Солнце']['quantity_spinbox']  = ttk.Spinbox(frame2, fro
 label_quantity_solarpanels.grid(row=row_counter, column=0, padx=10, pady=10)
 objects_and_costs['Солнце']['quantity_spinbox'] .grid(row=row_counter, column=1, padx=10, pady=10)
 
-label_cost_solarpanels = ttk.Label(frame2, text='Цена Солнечных панелей за 1 МВт:')
+label_cost_solarpanels = ttk.Label(frame2, text='Аренда солнечных панелей:')
 objects_and_costs['Солнце']['cost_entry']  = ttk.Entry(frame2)
 label_cost_solarpanels.grid(row=row_counter, column=2, padx=10, pady=10)
 objects_and_costs['Солнце']['cost_entry'] .grid(row=row_counter, column=3, padx=10, pady=10)
@@ -212,9 +215,74 @@ def calculate_results():
 
         remaining_energy = total_forecast_energy - total_consumption_energy
 
+        calculate_text.delete('1.0', tk.END)
+        calculate_text.insert(tk.END, f'Остаток энергии: {remaining_energy} МВт\n')
+        calculate_text.insert(tk.END, f'Запас монет: {total_cost} монет\n')
+
+        # Рассчитайте, сколько еще можно купить объектов, и выведите результат в result_text
+    except ValueError:
+        calculate_text.delete('1.0', tk.END)
+        calculate_text.insert(tk.END, 'Пожалуйста, введите числовые значения для всех полей.')
+
+
+def calculate():
+    try:
+        # Получение значений из элементов управления и их стоимостей
+        total_cost = 0
+        total_energy = 0
+        num_homes = float(objects_and_costs['Дома А']['quantity_spinbox'].get())
+        cost_per_megawatt_homes = float(objects_and_costs['Дома А']['cost_entry'].get())
+        total_cost_homes = num_homes * cost_per_megawatt_homes * len(df['Дома А'])
+        total_energy_homes = num_homes * df['Дома А'].sum()
+
+        # Заводы
+        num_factories = float(objects_and_costs['Заводы']['quantity_spinbox'].get())
+        cost_per_megawatt_factories = float(objects_and_costs['Заводы']['cost_entry'].get())
+        total_cost_factories = num_factories * cost_per_megawatt_factories * len(df['Заводы'])
+        total_energy_factories = num_factories * df['Заводы'].sum()
+
+        # Больницы
+        num_hospitals = float(objects_and_costs['Больницы']['quantity_spinbox'].get())
+        cost_per_megawatt_hospitals = float(objects_and_costs['Больницы']['cost_entry'].get())
+        total_cost_hospitals = num_hospitals * cost_per_megawatt_hospitals * len(df['Больницы'])
+        total_energy_hospitals = num_hospitals * df['Больницы'].sum()
+
+        # Ветряки
+        num_windmills = float(objects_and_costs['Ветер:А']['quantity_spinbox'].get())
+        cost_per_megawatt_windmills = float(objects_and_costs['Ветер:А']['cost_entry'].get())
+        total_cost_windmills = num_windmills * cost_per_megawatt_windmills* len(df['Ветер:А'])
+        total_energy_windmills = num_windmills * df['Ветер:А'].sum()
+
+        # Солнечные панели
+        num_solarpanels = float(objects_and_costs['Солнце']['quantity_spinbox'].get())
+        cost_per_megawatt_solarpanels = float(objects_and_costs['Солнце']['cost_entry'].get())
+        total_cost_solarpanels = num_solarpanels * cost_per_megawatt_solarpanels* len(df['Солнце'])
+        total_energy_solarpanels = num_solarpanels * df['Солнце'].sum()
+
+        # Общие расчеты
+        total_cost = total_cost_homes + total_cost_factories + total_cost_hospitals - total_cost_windmills - total_cost_solarpanels
+        total_energy = total_energy_homes + total_energy_factories + total_energy_hospitals
+
+        # Расчеты
+        total_forecast_energy = total_energy_solarpanels + total_energy_windmills
+        total_consumption_energy = total_energy
+
+        remaining_energy = total_forecast_energy - total_consumption_energy
+        count_home = 0
+        count_factory = 0
+        count_hospital = 0
+        total_home = 0
+        total_factory = 0
+        total_hospital = 0
+        if (remaining_energy > 0):
+            total_home = remaining_energy / total_cost_homes
+            total_factory = remaining_energy / total_cost_factories
+            total_hospital = remaining_energy / total_cost_hospitals
+
         result_text.delete('1.0', tk.END)
-        result_text.insert(tk.END, f'Остаток энергии: {remaining_energy} МВт\n')
-        result_text.insert(tk.END, f'Запас монет: {total_cost} монет\n')
+        result_text.insert(tk.END, f'Вы можете купить: {int(total_home)} домов \n')
+        result_text.insert(tk.END, f'или вы можете купить: {int(total_factory)} заводов \n')
+        result_text.insert(tk.END, f'или вы можете купить: {int(total_hospital)} больниц \n')
 
         # Рассчитайте, сколько еще можно купить объектов, и выведите результат в result_text
     except ValueError:
@@ -222,7 +290,7 @@ def calculate_results():
         result_text.insert(tk.END, 'Пожалуйста, введите числовые значения для всех полей.')
 
 
-calculate_button = ttk.Button(frame2, text='Рассчитать', command=calculate_results)
+calculate_button = ttk.Button(frame2, text='Рассчитать', command=calculate)
 calculate_button.grid(row=row_counter + 1, column=2, columnspan=4, pady=10)
 
 calculate_button = ttk.Button(frame2, text='Результаты', command=calculate_results)
