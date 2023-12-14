@@ -161,8 +161,11 @@ row_counter += 1
 result_label = ttk.Label(frame2, text='Результаты расчетов:')
 result_label.grid(row=row_counter, column=0, padx=10, pady=10)
 
-result_text = tk.Text(frame2, height=5, width=50)
+result_text = tk.Text(frame2, height=5, width=35)
 result_text.grid(row=row_counter + 1, column=0, columnspan=4, padx=10, pady=10)
+
+calculate_text = tk.Text(frame2, height=5, width=35)
+calculate_text.grid(row=row_counter + 2, column=0, columnspan=4, padx=10, pady=10)
 
 
 def calculate_results():
@@ -220,6 +223,10 @@ def calculate_results():
 
 
 calculate_button = ttk.Button(frame2, text='Рассчитать', command=calculate_results)
-calculate_button.grid(row=row_counter + 2, column=0, columnspan=4, pady=10)
+calculate_button.grid(row=row_counter + 1, column=2, columnspan=4, pady=10)
+
+calculate_button = ttk.Button(frame2, text='Результаты', command=calculate_results)
+calculate_button.grid(row=row_counter + 2, column=2, columnspan=4, pady=10)
+
 notebook.add(frame2, text='Рассчет')
 root.mainloop()
